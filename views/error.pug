@@ -1,0 +1,8 @@
+extends layout
+
+block content
+    h1= `Server Error`
+    h2= `Error status code: ${err.status} - Server Error`
+    p.error-p= `Human friendly error message: ${err.message}`
+
+    a.button(href=`/`) Home
