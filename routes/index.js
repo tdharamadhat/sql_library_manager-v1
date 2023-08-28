@@ -43,7 +43,7 @@ router.post('/new', asyncHandler(async (req, res) => {
 
     if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
       const errors = error.errors.map(err => err.message);
-      console.log(errors);
+      //console.log(errors);
       //res.status(400).json({ errors }); 
       res.status(400).render("new-book",{errors:errors});
     } else {
@@ -60,14 +60,22 @@ router.get('/:id', asyncHandler( async (req,res) => {
       id: bookID
     }
   });
-  if(book){
+  if(JSON.stringify(book) !== '[]'){
     res.render("update-book", {isUpdated: false, books: book});
+  } else {
+    // display 404 page.
+    const err = new Error("Sorry! We couldn't find the page you were looking for.");
+    res.status(404).render('page-not-found',{ err });
   }
 }));
 
 // Route that update book detail form
   router.post('/:id', asyncHandler( async (req, res) => {
     const bookID = req.params.id;
+    //For sending to error message
+    const body = req.body;
+    const book = {book:{...body,id: parseInt(bookID),}};
+
     try {
         await Book.update(req.body, {
         where: {
@@ -79,12 +87,13 @@ router.get('/:id', asyncHandler( async (req,res) => {
               id: bookID
             }
           });
-      // Display successful message in the form.
+      // Display successful update message in the form.
       res.render("update-book", { isUpdated: true, books: book});
     } catch (error) {
       if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
         const errors = error.errors.map(err => err.message);
-        res.status(400).json({ errors });
+        // Display error  message in the form.
+        res.status(400).render("update-book",{isUpdated: false, books: book, errors:errors});
       } else {
         throw error;
       }
